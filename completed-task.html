@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Task Completed</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #0f0;
+      font-family: monospace, monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+      font-size: 2rem;
+    }
+  </style>
+</head>
+<body>
+  Task completed! Redirecting to your key...
+
+  <script>
+    const secret = "showblack_secret";
+
+    function sha256(str) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(str);
+      return crypto.subtle.digest("SHA-256", data).then((hash) => {
+        let hex = "";
+        const view = new DataView(hash);
+        for (let i = 0; i < hash.byteLength; i += 4) {
+          hex += ("00000000" + view.getUint32(i).toString(16)).slice(-8);
+        }
+        return hex;
+      });
+    }
+
+    function formatDate(date) {
+      return date.getUTCFullYear() + "-" +
+             String(date.getUTCMonth() + 1).padStart(2, "0") + "-" +
+             String(date.getUTCDate()).padStart(2, "0");
+    }
+
+    async function redirectToKey() {
+      const today = formatDate(new Date());
+      const raw = today + secret;
+      const hash = await sha256(raw);
+      window.location.href = "/amongus-keypage/#/" + hash;
+    }
+
+    setTimeout(() => {
+      redirectToKey();
+    }, 1500);
+  </script>
+</body>
+</html>
