@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Among Us Key</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #f00;
+      font-family: monospace, monospace;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+      padding: 1rem;
+    }
+    .key-box {
+      background-color: #111;
+      border: 2px solid #f00;
+      border-radius: 10px;
+      padding: 20px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      user-select: all;
+      cursor: pointer;
+      margin-top: 1rem;
+      width: 90%;
+      max-width: 500px;
+      word-break: break-all;
+    }
+    h1 {
+      font-weight: normal;
+      margin-bottom: 0.5rem;
+    }
+    p {
+      margin-top: 0;
+      font-size: 1.1rem;
+      max-width: 600px;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="title">🔐 Your Among Us Key for Today</h1>
+  <p id="description">Copy the key below and paste it in your hack to unlock the menu.</p>
+  <div class="key-box" onclick="copyKey()" id="keyBox">
+    loading...
+  </div>
+
+  <script>
+    const secret = "showblack_secret";
+
+    function sha256(str) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(str);
+      return crypto.subtle.digest("SHA-256", data).then((hash) => {
+        let hex = "";
+        const view = new DataView(hash);
+        for (let i = 0; i < hash.byteLength; i += 4) {
+          hex += ("00000000" + view.getUint32(i).toString(16)).slice(-8);
+        }
+        return hex;
+      });
+    }
+
+    function formatDate(date) {
+      return date.getUTCFullYear() + "-" +
+             String(date.getUTCMonth() + 1).padStart(2, "0") + "-" +
+             String(date.getUTCDate()).padStart(2, "0");
+    }
+
+    async function generateKey() {
+      const today = formatDate(new Date());
+      const raw = today + secret;
+      const hash = await sha256(raw);
+      return hash;
+    }
+
+    function copyKey() {
+      const key = document.getElementById("keyBox").textContent;
+      if (key && key !== "loading...") {
+        navigator.clipboard.writeText(key).then(() => {
+          alert("Key copied to clipboard!");
+        });
+      }
+    }
+
+    async function main() {
+      const path = window.location.pathname.replace(/^\/|\/$/g, ""); // tira barras no começo e fim
+      if (path === "completed-task") {
+        // Página de completed-task
+        document.getElementById("title").textContent = "⏳ Redirecting...";
+        document.getElementById("description").textContent = "Please wait while we generate your key...";
+        document.getElementById("keyBox").textContent = "Loading...";
+
+        const key = await generateKey();
+
+        // Redireciona para a URL com a key no path após 1 segundo
+        setTimeout(() => {
+          window.location.href = "/" + key;
+        }, 1000);
+
+      } else {
+        // Se estiver no root "/" ou em "/<key>"
+        let keyToShow = "";
+
+        // Se path for vazio (root), gera a chave do dia normalmente
+        // Se path for uma string (possivelmente a chave), usa ela para mostrar a chave (pode validar também)
+        if (!path) {
+          keyToShow = await generateKey();
+        } else {
+          // Validar se o path tem o formato esperado (64 chars hex)
+          if (/^[a-f0-9]{64}$/.test(path)) {
+            keyToShow = path;
+          } else {
+            // Se não for válido, gerar a chave do dia mesmo assim
+            keyToShow = await generateKey();
+          }
+        }
+
+        document.getElementById("keyBox").textContent = keyToShow;
+      }
+    }
+
+    main();
+  </script>
+</body>
+</html>
