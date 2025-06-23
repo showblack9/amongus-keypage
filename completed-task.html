@@ -48,7 +48,7 @@
       const today = formatDate(new Date());
       const raw = today + secret;
       const hash = await sha256(raw);
-      window.location.href = "/#/" + hash;
+      window.location.href = "/amongus-keypage/#/" + hash;
     }
 
     setTimeout(() => {
